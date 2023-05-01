@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>FreightWise Programming Test</title>
+
+    <!-- Using tailwind for styling -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+
+    <script>
+      'use strict';
+
+      /**
+       * Software Developer test.
+       *
+       * Doing research and making API calls are an important part of what we do at FreightWise.  This test will
+       * demonstrate your abilities to:
+       *
+       * - Make an API call
+       * - Research an API
+       * - Do basic DOM manipulation
+       * - Parse data
+       * - Handle errors
+       * - Be creative
+       *
+       * Feel free to ask any questions you may have.  Use a lot of comments, and explain why you are doing things.
+       * Don't spend more than 1-2 hours on it - we aren't expecting a finished product, but it should work and look
+       * nice.  Feel free to use any third party libraries, and if you do so, explain why you used them instead of
+       * built in browser APIs.
+       *
+       * Instructions:
+       * - Use the axios (https://github.com/axios/axios) request library to make an API call to the OpenWeatherMap
+       *   API for Current Weather Data using this API key:  25e989bd41e3e24ce13173d8126e0fd6
+       *   We've already imported this library to get you started.
+       * - Use either async/await or Promises.
+       * - Get the weather for Brentwood, TN, and write it to the DOM using the `setResults` method below.  Be
+       *   creative and make it look nice.
+       * - Handle errors and use the `setError` method below to display the error.  Also make it look nice.
+       * - If you find any mistakes in the test, fix them, and leave a comment about what you fixed and why.
+       * - Make sure your code is readable and maintainable.
+       * - Use plenty of descriptive comments.
+       * - Make sure your code runs in the latest version of Google Chrome and Firefox (ES6 is allowed).
+       * - Make your code live (GitHub with GitHub pages works nice).
+       * - Send a link to your finished test to dev-team-jobs@freightwisellc.com.
+       *
+       * Feel free to add your own twist to it (completely optional).  Here are a few ideas:
+       * - Sign up for NewsAPI.org and get the Top Headlines and show them along with the weather.
+       * - Use the browser location API to get the user's current location, and show that location's weather.
+       * - Show a satellite map of the weather in Brentwood.
+       * - Request a user's phone number and send them an SMS with the weather.
+       *
+       * Adarsh Kumar - Github: https://github.com/idealadarsh | LinkedIn: https://www.linkedin.com/in/idealadarsh
+       * Completed the following tasks:
+       * - Ask for geolocation permission
+       * - Fetch weather data from Open Weather (defaults to Brentwood)
+       * - Fetch headlines from NewsAPI (default US)
+       * - Add alert for error and success messages
+       * - Show cards for headlines
+       */
+      class Test {
+        constructor() {
+          // Added index to select the first element with class name "test-results"
+          this.testResults = document.getElementsByClassName('test-results')[0];
+
+          // For storing location coordinates
+          this.currentLocation = null;
+        }
+
+        async run() {
+          console.log(new Date().toISOString(), '[Test]', 'Running the test');
+
+          // Using try-catch to handle errors for async/await
+          try {
+            // Making a GET request to the OpenWeatherMap API
+            const weather = await axios.get(
+              // Changed the API key because the previous one was invalid
+              // Add condition to check if check currentLocation and change the parameters accordingly
+              this.currentLocation
+                ? `http://api.openweathermap.org/data/2.5/weather?lat=${this.currentLocation.latitude}&lon=${this.currentLocation.longitude}&appid=b2f8c7523c0224fdbd0b2eadaff035af`
+                : `http://api.openweathermap.org/data/2.5/weather?q=Brentwood,TN,us&appid=b2f8c7523c0224fdbd0b2eadaff035af`
+            );
+
+            // Making a GET request to the NewsAPI.org
+            const news = await axios.get(
+              'https://newsapi.org/v2/top-headlines?country=us&apiKey=32f0d3e461d54cf8b9d9d5624c87a367'
+            );
+
+            // Added a new parameter for news
+            this.setResults(weather.data, news.data);
+          } catch (error) {
+            this.setError(error.message);
+          }
+        }
+
+        // Set current location coordinates
+        setCurrentLocation(coords) {
+          this.currentLocation = coords;
+        }
+
+        setError(message) {
+          // TODO: Format the error
+          // this.testResults.innerHTML = (message || "").toString();
+
+          // Select main container and add error message to it
+          const container = document.getElementsByClassName('container')[0];
+          const errorElement = `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded absolute top-10 right-10 " role="alert">
+                        <strong class="font-bold">😔 Error!</strong>
+                        <span class="block sm:inline">${message}</span>
+                    </div>`;
+          container.innerHTML = container.innerHTML + errorElement;
+        }
+
+        setResults(results, news) {
+          // TODO: Format the results
+
+          // Convert temperature from Kelvin to Farenheit
+          const tempInFarenheit = parseInt(
+            (results.main.temp - 273.15) * 1.8 + 32
+          );
+
+          // Format the weather result
+          this.testResults.innerHTML = `<p>Weather in ${
+            this.currentLocation ? 'your location' : 'Brentwood, TN'
+          }: ${
+            results.weather[0].main
+          }, Temperature: ${tempInFarenheit}&deg; F</p>`;
+
+          // Create news cards
+          const newsCards = news.articles.map((n) => {
+            return `<div class="max-w-sm rounded overflow-hidden shadow-lg  m-4">
+                            <img class="w-full" src="${n.urlToImage}" alt="Sunset in the mountains">
+                            <div class="px-6 py-4">
+                                <div class="font-bold text-xl mb-2">${n.title}</div>
+                                <p class="text-gray-700 text-base">
+                                    ${n.description}
+                                </p>
+                            </div>
+                            <div class="px-6 py-4">
+                                <span class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">${n.source.name}</span>
+                            </div>
+                        </div>`;
+          });
+
+          // Format the news results
+          const newsResults =
+            document.getElementsByClassName('news-results')[0];
+          newsResults.innerHTML = `<h2 class="text-2xl font-bold text-center text-gray-900 mb-4">📰 Top Headlines</h2><div class="flex flex-wrap justify-center">${newsCards.join(
+            ''
+          )}</div>`;
+
+          // Select main container and add a success message to it
+          const container = document.getElementsByClassName('container')[0];
+          const errorElement = `<div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded absolute top-10 right-10 " role="alert">
+                        <strong class="font-bold">👏 Yay!</strong>
+                        <span class="block sm:inline">You can see the weather and news</span>
+                    </div>`;
+          container.innerHTML = container.innerHTML + errorElement;
+        }
+      }
+    </script>
+
+    <style>
+      /* Removed styles due to tailwind */
+    </style>
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  </head>
+  <body>
+    <div class="container mx-auto py-12">
+      <div class="flex flex-col items-center">
+        <h1 class="text-4xl font-bold text-center text-gray-900 mb-10">
+          <!-- Changed the name as it can show weather of users location as well -->
+          ⛅ Weather App
+        </h1>
+
+        <div class="test-results text-center text-xl mb-8"></div>
+
+        <div class="news-results my-8 w-100"></div>
+
+        <div class="button-container flex justify-center"></div>
+      </div>
+    </div>
+
+    <script>
+      'use strict';
+
+      /**
+       * Creates a button for kicking off the test and adds it to the DOM.
+       *
+       * @param {HTMLElement} context  the parent element to add the button to
+       * @param {Test}        test     the test to be executed
+       * @returns {HTMLElement} the button added to the test
+       */
+      function addButtonForTest(context, test) {
+        let testButton = document.createElement('button');
+
+        testButton.type = 'button';
+        // Add tailwind styles to the button
+        testButton.className =
+          'px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline';
+        testButton.innerText = '🚀 Get current Weather and news';
+        testButton.onclick = () => test.run();
+
+        context.appendChild(testButton);
+
+        return testButton;
+      }
+
+      // Create the Test and add a button to the UI for running the test
+      const test = new Test();
+
+      // Asks the user for their location and sets it on the test object
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+          test.setCurrentLocation(position.coords);
+        });
+      }
+
+      const buttonContainer =
+        document.getElementsByClassName('button-container')[0];
+
+      addButtonForTest(buttonContainer, test);
+    </script>
+  </body>
+</html>
